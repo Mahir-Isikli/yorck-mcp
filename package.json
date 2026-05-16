@@ -1,6 +1,6 @@
 {
   "name": "yorck-mcp",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "private": false,
   "type": "module",
   "scripts": {
@@ -37,7 +37,8 @@
   "files": [
     "bin",
     "src",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "repository": {
     "type": "git",
