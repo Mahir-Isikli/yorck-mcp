@@ -1,0 +1,51 @@
+{
+  "name": "yorck-mcp",
+  "version": "0.1.4",
+  "private": false,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "tail": "wrangler tail",
+    "cli": "tsx src/cli.ts"
+  },
+  "dependencies": {
+    "@cloudflare/puppeteer": "^1.1.0",
+    "@modelcontextprotocol/sdk": "1.23.0",
+    "agents": "^0.2.5",
+    "hono": "^4.10.4",
+    "zod": "^3.24.1",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20251013.0",
+    "typescript": "^5.7.3",
+    "wrangler": "^4.68.0",
+    "@types/node": "^24.0.0"
+  },
+  "overrides": {
+    "@modelcontextprotocol/sdk": "1.23.0"
+  },
+  "resolutions": {
+    "@modelcontextprotocol/sdk": "1.23.0"
+  },
+  "bin": {
+    "yorck": "bin/yorck.mjs",
+    "yorck-mcp": "bin/yorck.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mahir-Isikli/yorck-mcp.git"
+  },
+  "homepage": "https://yorck-mcp.isiklimahir.workers.dev",
+  "bugs": {
+    "url": "https://github.com/Mahir-Isikli/yorck-mcp/issues"
+  },
+  "license": "MIT"
+}
