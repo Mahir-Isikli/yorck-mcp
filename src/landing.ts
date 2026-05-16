@@ -1,90 +1,177 @@
+import { CLAUDE_CODE_BOOTSTRAP_PROMPT, YORCK_MOVIE_AGENT_SKILL } from "./skill-content.ts";
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function heroSeats(): string {
+  const taken = new Set([7, 8, 28, 43, 44, 45, 66, 67, 85, 99]);
+  const selected = new Set([56, 57]);
+  const blocked = new Set([12, 13, 14, 76]);
+  return Array.from({ length: 108 }, (_, i) => {
+    const cls = selected.has(i) ? "seat selected" : taken.has(i) ? "seat taken" : blocked.has(i) ? "seat blocked" : "seat";
+    return `<span class="${cls}" aria-hidden="true"></span>`;
+  }).join("");
+}
+
 export function landingPage(): string {
+  const claudePrompt = escapeHtml(CLAUDE_CODE_BOOTSTRAP_PROMPT.trim());
+  const skillMarkdown = escapeHtml(YORCK_MOVIE_AGENT_SKILL.trim());
+  const curlPrompt = "curl -fsSL https://yorck-mcp.isiklimahir.workers.dev/claude-code-prompt.md";
+  const claudeWeb = "https://yorck-mcp.isiklimahir.workers.dev/public/mcp";
+  const skillZip = "https://yorck-mcp.isiklimahir.workers.dev/skill.zip";
+  const localSkill = "npx -y yorck-mcp install-skill --target claude";
+  const claudePublic = "claude mcp add --transport http yorck https://yorck-mcp.isiklimahir.workers.dev/public/mcp";
+  const privateMcp = `claude mcp add --transport stdio \\
+  --env YORCK_EMAIL=you@example.com \\
+  --env YORCK_PASSWORD=your-password \\
+  --env YORCK_UNLIMITED_CARD=your-card-number \\
+  yorck-private -- npx -y yorck-mcp mcp-stdio`;
+  const cliQuickstart = `npx -y yorck-mcp plan --q "devil wears prada" --when tonight --after 18:00
+npx -y yorck-mcp seat-map-html <session-id> --out seat-map.html
+open seat-map.html`;
+
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>yorck-mcp</title>
-  <meta name="description" content="Installable Yorck Berlin cinema MCP, CLI, and agent skill." />
+  <title>Yorck Movie Agent</title>
+  <meta name="description" content="Install a Yorck Berlin cinema MCP, CLI, and Claude skill for movie planning, seat maps, checkout links, and local private booking." />
+  <meta property="og:title" content="Yorck Movie Agent" />
+  <meta property="og:description" content="A public MCP connector plus local CLI skill for Yorck movie nights." />
   <style>
-    @font-face{font-family:Messina;src:url(https://www.yorck.de/fonts/MessinaSansWeb-Regular.woff2) format("woff2");font-weight:400}
-    @font-face{font-family:Messina;src:url(https://www.yorck.de/fonts/MessinaSansWeb-Bold.woff2) format("woff2");font-weight:800}
-    @font-face{font-family:Alpina;src:url(https://www.yorck.de/fonts/GT-Alpina-Standard-Light.woff2) format("woff2");font-weight:400}
-    :root{--bg:#f8f4ec;--bg2:#eee7db;--paper:rgba(255,255,255,.68);--paper2:rgba(255,255,255,.92);--ink:#171513;--muted:#6f665c;--line:rgba(24,21,18,.13);--soft:0 14px 42px rgba(44,35,24,.09);--shadow:0 28px 90px rgba(44,35,24,.16);--yellow:#fcef17;--green:#0d6b51;--red:#d72128;--radius:28px}
-    *{box-sizing:border-box}html{scroll-behavior:smooth;overflow-x:hidden}body{margin:0;min-height:100vh;overflow-x:hidden;background:radial-gradient(circle at 8% 4%,rgba(252,239,23,.26),transparent 30%),radial-gradient(circle at 88% 7%,rgba(215,33,40,.11),transparent 28%),linear-gradient(135deg,#fbf8f2 0%,var(--bg) 55%,var(--bg2) 100%);color:var(--ink);font-family:Messina,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;letter-spacing:-.02em}body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:linear-gradient(rgba(255,255,255,.45) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.34) 1px,transparent 1px);background-size:54px 54px;mask-image:radial-gradient(circle at 50% 18%,black,transparent 72%)}a{color:inherit}.wrap{width:min(1180px,calc(100% - 36px));margin:0 auto;position:relative}.nav{position:sticky;top:14px;z-index:20;width:min(1180px,calc(100% - 36px));margin:14px auto 0;display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 12px;border:1px solid rgba(255,255,255,.74);border-radius:24px;background:rgba(255,255,255,.58);backdrop-filter:blur(22px) saturate(1.25);box-shadow:var(--soft),inset 0 0 0 1px rgba(255,255,255,.48)}.brand{display:flex;align-items:center;gap:12px;min-width:0;text-decoration:none;font-weight:900;letter-spacing:-.045em}.mark{width:42px;height:42px;border-radius:15px;background:#111;color:var(--yellow);display:grid;place-items:center;font-weight:900;box-shadow:0 12px 32px rgba(23,21,19,.18);flex:0 0 auto}.brand span{white-space:nowrap}.nav-links{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}.nav a:not(.brand){text-decoration:none;color:#443d35;font-size:14px;font-weight:760;padding:10px 12px;border-radius:999px}.nav a:not(.brand):hover{background:rgba(255,255,255,.78)}.nav .install-link{background:var(--ink);color:white!important;box-shadow:0 10px 26px rgba(23,21,19,.16)}.hero{padding:76px 0 42px}.hero-grid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:30px;align-items:center}.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:9px 13px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.66);color:#4e463d;font-size:14px;font-weight:760;backdrop-filter:blur(16px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.42)}h1{max-width:780px;margin:20px 0 16px;font-size:clamp(48px,7.6vw,94px);line-height:.9;letter-spacing:-.085em;text-wrap:balance}.serif{font-family:Alpina,Georgia,serif;font-weight:400;letter-spacing:-.055em}.lead{max-width:660px;margin:0 0 26px;color:#50473e;font-size:clamp(18px,1.9vw,24px);line-height:1.28;letter-spacing:-.04em}.actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.button{appearance:none;border:0;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:14px 18px;border-radius:17px;background:var(--ink);color:white;box-shadow:0 16px 36px rgba(23,21,19,.18);font-size:15px;font-weight:860;transition:transform .18s ease,box-shadow .18s ease}.button:hover{transform:translateY(-1px);box-shadow:0 20px 44px rgba(23,21,19,.23)}.button.secondary{background:rgba(255,255,255,.76);color:var(--ink);border:1px solid var(--line);box-shadow:var(--soft)}.button.yellow{background:var(--yellow);color:#111}.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:22px}.stat{padding:16px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.56);backdrop-filter:blur(18px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.34)}.stat b{display:block;font-size:24px;letter-spacing:-.06em}.stat span{color:var(--muted);font-size:13px}.example-shell{border:1px solid rgba(255,255,255,.76);background:rgba(255,255,255,.48);border-radius:36px;padding:14px;backdrop-filter:blur(24px) saturate(1.2);box-shadow:var(--shadow),inset 0 0 0 1px rgba(255,255,255,.46)}.example-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:8px 8px 14px;color:#403932;font-weight:800;font-size:14px}.dots{display:flex;gap:7px}.dot{width:10px;height:10px;border-radius:50%;background:#e35d5b}.dot:nth-child(2){background:#e6bc4a}.dot:nth-child(3){background:#4baf72}.movie-card{display:grid;gap:14px;border:1px solid var(--line);background:rgba(255,255,255,.78);border-radius:28px;padding:18px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.46)}.ticket{background:#111;color:#fff;border-radius:24px;padding:22px;min-height:190px;position:relative;overflow:hidden}.ticket:after{content:"";position:absolute;left:22px;right:22px;top:112px;height:10px;border-radius:999px;background:var(--yellow);box-shadow:0 0 24px rgba(252,239,23,.45)}.ticket h3{font-size:34px;letter-spacing:-.06em;margin:0 0 8px}.ticket p{color:#cfc9be;margin:0}.screen-word{position:absolute;right:22px;top:94px;color:var(--yellow);font-weight:900;letter-spacing:.45em}.seat-preview{display:grid;grid-template-columns:repeat(12,1fr);gap:8px;padding:12px 4px}.seat{height:22px;border-radius:7px;border:1px solid #7aa35c;background:#edf5df}.seat.taken{border-color:#cd6a63;background:#f8e9e6}.seat.pick{background:var(--yellow);border-color:#111;box-shadow:0 0 0 2px #111 inset}.label-row{display:flex;justify-content:space-between;gap:12px;color:var(--muted);font-size:13px;font-weight:760}section{padding:38px 0}.section-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;margin-bottom:18px}h2{margin:0;font-size:clamp(34px,4vw,56px);line-height:.98;letter-spacing:-.075em;text-wrap:balance}.sub{color:var(--muted);max-width:640px;line-height:1.45}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}.card,.code-card{border:1px solid rgba(255,255,255,.74);border-radius:var(--radius);background:var(--paper);backdrop-filter:blur(20px) saturate(1.15);box-shadow:var(--soft),inset 0 0 0 1px rgba(255,255,255,.42)}.card{padding:22px}.card h3{margin:0 0 8px;font-size:21px;letter-spacing:-.05em}.card p{margin:0;color:var(--muted);line-height:1.42}.code-card{overflow:hidden}.code-head{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:13px 14px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.54)}.code-title{font-weight:820;font-size:14px;color:#3d362e;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.copy{border:1px solid var(--line);background:rgba(255,255,255,.86);color:var(--ink);border-radius:12px;padding:8px 10px;cursor:pointer;font-weight:820;white-space:nowrap}.copy:hover{background:var(--yellow)}pre{margin:0;padding:18px;overflow:auto;font-size:13px;line-height:1.48;background:rgba(28,25,22,.95);color:#fff7eb;letter-spacing:-.01em;max-height:680px}.install-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}.prompt-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);gap:16px}.list{padding-left:20px;color:var(--muted);line-height:1.8}.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:#111;color:#fff;border-radius:999px;padding:10px 14px;font-weight:820;opacity:0;transition:.2s;z-index:99}.toast.show{opacity:1}@media(max-width:900px){.hero-grid,.install-grid,.prompt-grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}h1{font-size:58px}.nav{position:relative;top:0}.section-head{display:block}}
+    @font-face{font-family:GT-Alpina;src:url(https://www.yorck.de/fonts/GT-Alpina-Standard-Light.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+    @font-face{font-family:Messina-Sans;src:url(https://www.yorck.de/fonts/MessinaSansWeb-Regular.woff2) format("woff2");font-weight:400;font-style:normal;font-display:swap}
+    @font-face{font-family:Messina-Sans;src:url(https://www.yorck.de/fonts/MessinaSansWeb-Bold.woff2) format("woff2");font-weight:700;font-style:normal;font-display:swap}
+    :root{--yellow:#fcef17;--ink:#1a1a1a;--muted:#606060;--line:#1a1a1a;--soft:#f6f6f6;--paper:#fff;--purple:#824cff;--green:#248a45;--red:#d14b45;--cream:#fbfaf4}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#fff;color:var(--ink);font-family:Messina-Sans,Roboto,Helvetica,Arial,sans-serif;letter-spacing:-.015em}a{color:inherit}.page{width:min(1440px,calc(100% - 48px));margin:0 auto}.topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(18px);border-bottom:1px solid var(--line)}.nav{height:78px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{display:flex;align-items:center;gap:13px;text-decoration:none;font-weight:700;letter-spacing:-.035em}.mark{width:48px;height:48px;display:grid;place-items:center}.mark svg{display:block;width:48px;height:48px}.brand-text{line-height:.9;font-size:18px}.nav-links{display:flex;align-items:center;gap:30px;font-size:18px;font-weight:700}.nav-links a{text-decoration:none}.nav-links a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}.nav-pill{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 21px;border-radius:999px;background:var(--yellow);font-size:15px;text-transform:uppercase;letter-spacing:.02em}.nav-pill:hover{text-decoration:none!important;filter:brightness(.96)}.hero{display:grid;grid-template-columns:minmax(360px,.82fr) minmax(540px,1fr);min-height:calc(100vh - 78px);border-left:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}.hero-left{display:grid;grid-template-rows:1fr auto;border-right:1px solid var(--line);min-width:0}.hook{padding:56px clamp(24px,4vw,66px) 42px}.eyebrow{display:inline-flex;align-items:center;gap:10px;margin-bottom:28px;font-size:14px;text-transform:uppercase;letter-spacing:.12em;font-weight:700}.eyebrow:before{content:"";width:12px;height:12px;border-radius:50%;background:var(--yellow);box-shadow:0 0 0 1px var(--ink)}h1{margin:0 0 26px;font-size:clamp(54px,6.2vw,98px);line-height:.88;letter-spacing:-.076em;max-width:760px}.alpina{font-family:GT-Alpina,Georgia,serif;font-weight:400;letter-spacing:-.055em}.lead{max-width:650px;margin:0;color:#2b2b2b;font-size:clamp(20px,2.2vw,31px);line-height:1.14;letter-spacing:-.045em}.lead strong{font-weight:700}.quick-install{border-top:1px solid var(--line);background:var(--cream);padding:28px clamp(24px,4vw,66px) 34px}.quick-install h2{margin:0 0 14px;font-size:clamp(28px,3vw,46px);line-height:.95;letter-spacing:-.065em}.quick-install p{margin:0 0 18px;max-width:610px;color:#373737;font-size:18px;line-height:1.36}.button-row{display:flex;flex-wrap:wrap;gap:12px}.btn{appearance:none;border:1px solid var(--ink);background:#fff;color:var(--ink);display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:48px;padding:0 19px;border-radius:999px;font:700 14px/1 Messina-Sans,Arial,sans-serif;text-decoration:none;text-transform:uppercase;letter-spacing:.02em;cursor:pointer;transition:transform .16s ease,box-shadow .16s ease,background .16s ease}.btn:hover{transform:translateY(-1px);box-shadow:0 12px 28px rgba(0,0,0,.12);text-decoration:none}.btn.yellow{background:var(--yellow)}.btn.black{background:var(--ink);color:#fff}.btn.ghost{background:transparent}.copy-btn{border:1px solid var(--ink);background:var(--yellow);border-radius:999px;min-height:38px;padding:0 14px;font:700 12px/1 Messina-Sans,Arial,sans-serif;text-transform:uppercase;letter-spacing:.03em;cursor:pointer}.copy-btn:hover{filter:brightness(.96)}.hero-right{position:relative;min-width:0;background:#fff}.marquee{height:46px;border-bottom:1px solid var(--line);display:flex;align-items:center;overflow:hidden;white-space:nowrap;background:var(--yellow);font-weight:700;text-transform:uppercase;letter-spacing:.1em}.marquee span{display:inline-block;padding-left:24px;animation:marquee 26s linear infinite}@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}.screen-wrap{padding:36px clamp(18px,3.2vw,54px) 40px}.agent-card{border:1px solid var(--line);background:#fff;box-shadow:14px 14px 0 var(--yellow)}.agent-head{height:58px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:0 18px;font-weight:700}.traffic{display:flex;gap:8px}.traffic i{width:11px;height:11px;border:1px solid var(--ink);border-radius:50%;background:#fff}.traffic i:nth-child(2){background:var(--yellow)}.traffic i:nth-child(3){background:#c8efc8}.agent-body{padding:22px}.agent-line{display:grid;grid-template-columns:42px 1fr;gap:12px;align-items:start;margin-bottom:16px}.bubble{border:1px solid var(--line);border-radius:18px;padding:13px 15px;background:#fff;font-size:16px;line-height:1.35}.bubble.agent{background:#f8f8f8}.avatar{width:42px;height:42px;border:1px solid var(--line);border-radius:50%;display:grid;place-items:center;font-weight:700;background:var(--yellow)}.seat-panel{margin-top:18px;border:1px solid var(--line);background:#fff}.seat-top{display:grid;grid-template-columns:1fr 160px;border-bottom:1px solid var(--line)}.poster{min-height:174px;background:#111;color:#fff;padding:22px;position:relative;overflow:hidden}.poster:before{content:"";position:absolute;left:22px;right:22px;bottom:31px;height:14px;border-radius:999px;background:var(--yellow);box-shadow:0 0 22px rgba(252,239,23,.55)}.poster b{display:block;font-size:34px;line-height:.96;letter-spacing:-.06em;max-width:360px}.poster small{display:block;margin-top:9px;color:#d7d7d7;font-size:15px}.ticket-stub{border-left:1px dashed var(--line);background:var(--yellow);display:grid;place-items:center;text-align:center;padding:16px;font-weight:700;text-transform:uppercase;letter-spacing:.08em}.seats{padding:18px;background:#f9f9f9}.screen{height:20px;margin:0 auto 18px;width:min(420px,82%);background:var(--ink);color:var(--yellow);display:grid;place-items:center;font-size:11px;letter-spacing:.55em;font-weight:700}.seat-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:8px;max-width:590px;margin:0 auto}.seat{height:24px;border:1px solid #6f9d47;border-radius:0 0 9px 9px;background:#f4fbec}.seat.taken{background:#c9c9c9;border-color:#888}.seat.blocked{background:#fff;border-color:#111;position:relative}.seat.blocked:after{content:"";position:absolute;inset:2px;background:linear-gradient(45deg,transparent 47%,#111 49%,#111 51%,transparent 53%),linear-gradient(-45deg,transparent 47%,#111 49%,#111 51%,transparent 53%)}.seat.selected{background:var(--yellow);border-color:#111;box-shadow:0 0 0 2px #111 inset}.legend{display:flex;flex-wrap:wrap;gap:14px 22px;margin-top:17px;color:#333;font-size:14px}.legend span{display:flex;align-items:center;gap:8px}.legend i{width:22px;height:22px;border:1px solid var(--line);display:inline-block}.legend .l-selected{background:var(--yellow)}.legend .l-taken{background:#c9c9c9}.section{border-left:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);padding:54px clamp(20px,4vw,66px)}.section-header{display:grid;grid-template-columns:minmax(260px,.72fr) minmax(320px,1fr);gap:40px;align-items:end;margin-bottom:30px}.section-kicker{font-size:14px;text-transform:uppercase;letter-spacing:.12em;font-weight:700;margin-bottom:13px}.section h2{margin:0;font-size:clamp(42px,5.2vw,80px);line-height:.9;letter-spacing:-.075em}.section-desc{margin:0;color:#3d3d3d;font-size:20px;line-height:1.35;max-width:740px}.install-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--line);border-left:1px solid var(--line)}.install-card{min-height:250px;padding:24px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff;display:flex;flex-direction:column;justify-content:space-between;gap:22px}.install-card:nth-child(2n){background:#fafafa}.install-card h3{margin:0 0 9px;font-size:30px;line-height:.95;letter-spacing:-.055em}.install-card p{margin:0;color:#454545;line-height:1.35}.tag{display:inline-flex;align-self:flex-start;border:1px solid var(--line);border-radius:999px;padding:7px 10px;background:var(--yellow);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}.code-layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}.code-card{border:1px solid var(--line);background:#fff;min-width:0}.code-head{height:52px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;padding:0 14px 0 18px}.code-title{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.code-card pre{margin:0;padding:18px;background:#111;color:#fffdf2;overflow:auto;max-height:480px;font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:-.015em}.code-card.large pre{max-height:680px}.copy-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;border:1px solid var(--line);background:#fff;padding:10px 10px 10px 16px}.copy-row code{font:14px/1.35 ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;overflow:auto}.behavior-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border-top:1px solid var(--line);border-left:1px solid var(--line)}.behavior{padding:26px;min-height:225px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff}.behavior:nth-child(2){background:var(--yellow)}.behavior h3{margin:0 0 12px;font-size:34px;line-height:.95;letter-spacing:-.06em}.behavior p{margin:0;color:#333;line-height:1.4}.footer{padding:44px 0 58px;text-align:center}.footer .mark{margin:0 auto 16px}.footer p{margin:0 auto 18px;max-width:760px;font-size:22px;line-height:1.26}.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(12px);background:#111;color:#fff;border-radius:999px;padding:12px 16px;font-weight:700;opacity:0;pointer-events:none;transition:.2s;z-index:100}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}@media(max-width:1120px){.hero{grid-template-columns:1fr}.hero-left{border-right:0}.hero-right{border-top:1px solid var(--line)}.install-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.section-header,.code-layout{grid-template-columns:1fr}.nav-links{gap:14px;font-size:15px}.page{width:min(100%,calc(100% - 24px))}}@media(max-width:720px){.nav{height:auto;padding:14px 0;align-items:flex-start}.nav-links{justify-content:flex-end}.hero{min-height:auto}.hook{padding:38px 22px}.quick-install{padding:24px 22px}.screen-wrap{padding:24px 18px 30px}.seat-top{grid-template-columns:1fr}.ticket-stub{border-left:0;border-top:1px dashed var(--line);min-height:82px}.install-grid,.behavior-grid{grid-template-columns:1fr}.section{padding:38px 22px}h1{font-size:64px}.lead{font-size:21px}.hero-left{display:block}}
   </style>
 </head>
 <body>
-  <nav class="nav"><a class="brand" href="/"><div class="mark">Y</div><span>yorck-mcp</span></a><div class="nav-links"><a href="/public/mcp">public MCP</a><a href="/claude-code-prompt.md">Claude Code prompt</a><a href="/skill.zip">skill.zip</a><a href="https://github.com/Mahir-Isikli/yorck-mcp">GitHub</a><a class="install-link" href="#install">Install</a></div></nav>
-  <main class="wrap">
+  <header class="topbar">
+    <nav class="page nav" aria-label="main navigation">
+      <a class="brand" href="/" aria-label="Yorck Movie Agent home">
+        <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><path fill="#1a1a1a" d="M32 2l5.1 5.3 7.2-1 2.7 6.8 7 2.3-.5 7.3 5.7 4.7-3.6 6.4 3.6 6.4-5.7 4.7.5 7.3-7 2.3-2.7 6.8-7.2-1L32 62l-5.1-5.3-7.2 1-2.7-6.8-7-2.3.5-7.3-5.7-4.7 3.6-6.4-3.6-6.4 5.7-4.7-.5-7.3 7-2.3 2.7-6.8 7.2 1L32 2z"/><path fill="#fff" d="M20.8 18.3h8.5v3.2h-1.8l4.8 8 4.8-8h-1.9v-3.2h8v3.2h-1.7l-7 11.3v8.1h3.1v3.2H26.4v-3.2h3.2v-8.1l-7.1-11.3h-1.7v-3.2z"/></svg></span>
+        <span class="brand-text">Yorck<br/>Movie Agent</span>
+      </a>
+      <div class="nav-links">
+        <a href="#install">Install</a>
+        <a href="#prompt">Claude Code</a>
+        <a href="#skill">Skill file</a>
+        <a href="https://github.com/Mahir-Isikli/yorck-mcp">GitHub</a>
+        <a class="nav-pill" href="/public/mcp">Public MCP</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="page">
     <section class="hero">
-      <div class="hero-grid">
-        <div>
-          <div class="eyebrow">Yorck Berlin cinema · MCP + skill + CLI</div>
-          <h1><span class="serif">movie night</span> as a thing your agent can do.</h1>
-          <p class="lead">Search what is playing, render seats, create calendar files, return checkout links, and optionally book Yorck Unlimited tickets from a local private MCP.</p>
-          <div class="actions"><a class="button yellow" href="#prompt">Copy Claude Code prompt</a><a class="button" href="#install">Install options</a><a class="button secondary" href="/skill.zip">Download skill.zip</a></div>
-          <div class="stats"><div class="stat"><b>public</b><span>search, seats, calendar, links</span></div><div class="stat"><b>local</b><span>private booking credentials stay local</span></div><div class="stat"><b>HTML</b><span>fallback when SVG does not render</span></div></div>
+      <div class="hero-left">
+        <div class="hook">
+          <div class="eyebrow">Yorck Berlin · MCP · CLI · Claude skill</div>
+          <h1>i taught my <span class="alpina">agent</span> how to book movie tickets.</h1>
+          <p class="lead">A public connector for showtimes and seat maps, plus a local private MCP that can book Yorck Unlimited tickets after confirmation.</p>
         </div>
-        <div class="example-shell">
-          <div class="example-head"><div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></div><span>seat-map-html fallback</span></div>
-          <div class="movie-card">
-            <div class="ticket"><h3>delphi LUX · Saal 1</h3><p>Devil Wears Prada 2 · 21:30 · OV · tonight</p><div class="screen-word">SCREEN</div></div>
-            <div class="label-row"><span>available</span><span>picked by agent</span><span>checkout link</span></div>
-            <div class="seat-preview">${Array.from({ length: 96 }, (_, i) => `<span class="seat ${[9,10,34,35,36,53,54,55,80].includes(i) ? "taken" : i === 62 ? "pick" : ""}"></span>`).join("")}</div>
+        <div class="quick-install">
+          <h2>Claude Code should install it for you.</h2>
+          <p>Paste the bootstrap prompt. It sends Claude Code to the GitHub repo, loads the skill, adds the Yorck MCP server, and smoke-tests the CLI.</p>
+          <div class="button-row">
+            <button class="btn yellow" data-copy="prompt-full">Copy full prompt</button>
+            <button class="btn" data-copy="curl-prompt">Copy curl prompt</button>
+            <a class="btn ghost" href="https://github.com/Mahir-Isikli/yorck-mcp">Open GitHub</a>
+          </div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="marquee" aria-hidden="true"><span>public by default · private when you opt in · svg when it renders · html when it does not · checkout links without an account · booking only after confirmation · public by default · private when you opt in · svg when it renders · html when it does not · checkout links without an account · booking only after confirmation · </span></div>
+        <div class="screen-wrap">
+          <div class="agent-card">
+            <div class="agent-head"><div class="traffic"><i></i><i></i><i></i></div><span>agent output preview</span></div>
+            <div class="agent-body">
+              <div class="agent-line"><div class="avatar">M</div><div class="bubble">find something low-stress tonight after 7. show me seats if you can.</div></div>
+              <div class="agent-line"><div class="avatar">Y</div><div class="bubble agent">You are free tonight. I found an OV showing at delphi LUX with two good seats. Want me to open checkout or book with your Unlimited card?</div></div>
+              <div class="seat-panel">
+                <div class="seat-top"><div class="poster"><b>Devil Wears Prada 2</b><small>delphi LUX · 21:30 · OV · tonight</small></div><div class="ticket-stub">checkout<br/>ready</div></div>
+                <div class="seats"><div class="screen">SCREEN</div><div class="seat-grid">${heroSeats()}</div><div class="legend"><span><i></i>available</span><span><i class="l-selected"></i>selected</span><span><i class="l-taken"></i>taken</span></div></div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
     </section>
 
-    <section>
-      <div class="section-head"><h2>What it installs</h2><p class="sub">Use the public connector in Claude Web, a local MCP in Claude Code, or the CLI directly. Add the skill so the model knows when to return SVG, inline HTML, checkout links, or booking confirmation.</p></div>
-      <div class="grid">
-        <div class="card"><h3>Public connector</h3><p>Add the remote MCP URL in Claude Web or Desktop. No account needed, read-only tools only.</p></div>
-        <div class="card"><h3>Claude Code prompt</h3><p>Paste one bootstrap prompt into Claude Code. It reads the repo, installs the skill, adds MCP, and smoke-tests.</p></div>
-        <div class="card"><h3>Local bookable MCP</h3><p>Run <code>npx -y yorck-mcp mcp-stdio</code> with your own Yorck credentials. Booking asks for confirmation.</p></div>
-        <div class="card"><h3>Inline HTML seats</h3><p>When the client cannot display MCP SVG/image output, use <code>seat_map_html</code> or <code>seat-map-html</code>.</p></div>
-      </div>
-    </section>
-
-    <section id="prompt">
-      <div class="section-head"><h2>Claude Code bootstrap prompt</h2><p class="sub">This is the easiest Claude Code install path: paste the prompt, let Claude Code set itself up, then test with a movie request.</p></div>
-      <div class="prompt-grid">
-        <div class="code-card"><div class="code-head"><div class="code-title">prompt to paste into Claude Code</div><button class="copy" data-copy="prompt-code">Copy prompt</button></div><pre id="prompt-code">curl -fsSL https://yorck-mcp.isiklimahir.workers.dev/claude-code-prompt.md</pre></div>
-        <div class="card"><h3>What Claude Code will do</h3><ul class="list"><li>read the public GitHub repo</li><li>install the Claude skill</li><li>add the public MCP connector</li><li>smoke-test the CLI</li><li>use HTML fallback for seat maps when needed</li></ul></div>
-      </div>
-    </section>
-
-    <section id="install">
-      <div class="section-head"><h2>Install options</h2><p class="sub">Copy the path that matches your environment. Public modes do not require credentials. Private booking uses local environment variables.</p></div>
+    <section class="section" id="install">
+      <div class="section-header"><div><div class="section-kicker">install surfaces</div><h2>one project, four ways in.</h2></div><p class="section-desc">The connector gives tools. The skill teaches the model how to use them: when to search, when to return a checkout link, when to render SVG, and when to fall back to inline HTML.</p></div>
       <div class="install-grid">
-        <div class="code-card"><div class="code-head"><div class="code-title">Claude Web custom connector</div><button class="copy" data-copy="web-code">Copy</button></div><pre id="web-code">https://yorck-mcp.isiklimahir.workers.dev/public/mcp</pre></div>
-        <div class="code-card"><div class="code-head"><div class="code-title">Upload skill in Claude Web</div><button class="copy" data-copy="skillzip-code">Copy</button></div><pre id="skillzip-code">https://yorck-mcp.isiklimahir.workers.dev/skill.zip</pre></div>
-        <div class="code-card"><div class="code-head"><div class="code-title">Claude Code public MCP</div><button class="copy" data-copy="cc-public-code">Copy</button></div><pre id="cc-public-code">claude mcp add --transport http yorck https://yorck-mcp.isiklimahir.workers.dev/public/mcp</pre></div>
-        <div class="code-card"><div class="code-head"><div class="code-title">Install local skill</div><button class="copy" data-copy="skill-code">Copy</button></div><pre id="skill-code">npx -y yorck-mcp install-skill --target claude</pre></div>
-        <div class="code-card"><div class="code-head"><div class="code-title">CLI quick start</div><button class="copy" data-copy="cli-code">Copy</button></div><pre id="cli-code">npx -y yorck-mcp whats-on --when tonight --after 18:00
-npx -y yorck-mcp plan --q "devil wears prada" --when tonight
-npx -y yorck-mcp seat-map-html &lt;session-id&gt; --out seat-map.html</pre></div>
-        <div class="code-card"><div class="code-head"><div class="code-title">Private local booking MCP</div><button class="copy" data-copy="private-code">Copy</button></div><pre id="private-code">claude mcp add --transport stdio \\
-  --env YORCK_EMAIL=you@example.com \\
-  --env YORCK_PASSWORD=your-password \\
-  --env YORCK_UNLIMITED_CARD=your-card-number \\
-  yorck-private -- npx -y yorck-mcp mcp-stdio</pre></div>
+        <article class="install-card"><div><span class="tag">Claude Web</span><h3>add the public connector</h3><p>No account required. Search showtimes, return seat maps, create calendar files, and hand off to Yorck checkout.</p></div><button class="btn yellow" data-copy="web-code">Copy URL</button></article>
+        <article class="install-card"><div><span class="tag">Claude Code</span><h3>paste a bootstrap prompt</h3><p>Claude Code reads the repo, installs the skill, adds the MCP server, and tests a search command.</p></div><button class="btn yellow" data-copy="prompt-full">Copy prompt</button></article>
+        <article class="install-card"><div><span class="tag">Local MCP</span><h3>keep credentials on your machine</h3><p>Use your own Yorck email, password, and Unlimited card. Booking remains confirmation-gated.</p></div><button class="btn yellow" data-copy="private-code">Copy command</button></article>
+        <article class="install-card"><div><span class="tag">CLI</span><h3>use it without an agent</h3><p>Plan a movie, render a seat map as HTML, and open the result locally.</p></div><button class="btn yellow" data-copy="cli-code">Copy CLI</button></article>
       </div>
     </section>
 
-    <section>
-      <div class="grid">
-        <div class="card"><h2>Public tools</h2><ul class="list"><li><code>whats_on</code>, search showtimes</li><li><code>pick_showtime</code>, pick one good plan</li><li><code>seat_map</code>, SVG/image output</li><li><code>seat_map_html</code>, inline HTML fallback</li><li><code>add_to_calendar</code>, ICS file</li></ul></div>
-        <div class="card"><h2>Safety rules</h2><ul class="list"><li>public mode never books</li><li>private mode keeps credentials local</li><li>booking is confirmation-gated</li><li>paid checkout stays on Yorck's site</li><li>do not claim booking unless the tool succeeds</li></ul></div>
+    <section class="section" id="prompt">
+      <div class="section-header"><div><div class="section-kicker">Claude Code prompt</div><h2>curl it, paste it, let the agent set itself up.</h2></div><p class="section-desc">This is the install story for developers: do not manually copy six snippets. Give Claude Code the setup prompt and let it wire the repo, skill, MCP server, and smoke test.</p></div>
+      <div class="copy-row"><code id="curl-prompt">${escapeHtml(curlPrompt)}</code><button class="copy-btn" data-copy="curl-prompt">Copy curl</button></div>
+      <div style="height:18px"></div>
+      <div class="code-card large"><div class="code-head"><div class="code-title">claude-code-prompt.md</div><button class="copy-btn" data-copy="prompt-full">Copy prompt</button></div><pre id="prompt-full">${claudePrompt}</pre></div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><div><div class="section-kicker">copyable setup</div><h2>for people who want the exact snippets.</h2></div><p class="section-desc">Everything stays copyable. Public mode is read-only. Private mode runs locally with environment variables.</p></div>
+      <div class="code-layout">
+        <div class="code-card"><div class="code-head"><div class="code-title">Claude Web connector URL</div><button class="copy-btn" data-copy="web-code">Copy</button></div><pre id="web-code">${escapeHtml(claudeWeb)}</pre></div>
+        <div class="code-card"><div class="code-head"><div class="code-title">Upload Claude skill ZIP</div><button class="copy-btn" data-copy="skillzip-code">Copy</button></div><pre id="skillzip-code">${escapeHtml(skillZip)}</pre></div>
+        <div class="code-card"><div class="code-head"><div class="code-title">Claude Code public MCP</div><button class="copy-btn" data-copy="cc-public-code">Copy</button></div><pre id="cc-public-code">${escapeHtml(claudePublic)}</pre></div>
+        <div class="code-card"><div class="code-head"><div class="code-title">Install the skill locally</div><button class="copy-btn" data-copy="skill-code">Copy</button></div><pre id="skill-code">${escapeHtml(localSkill)}</pre></div>
+        <div class="code-card"><div class="code-head"><div class="code-title">Private local booking MCP</div><button class="copy-btn" data-copy="private-code">Copy</button></div><pre id="private-code">${escapeHtml(privateMcp)}</pre></div>
+        <div class="code-card"><div class="code-head"><div class="code-title">CLI quick start</div><button class="copy-btn" data-copy="cli-code">Copy</button></div><pre id="cli-code">${escapeHtml(cliQuickstart)}</pre></div>
       </div>
+    </section>
+
+    <section class="section">
+      <div class="section-header"><div><div class="section-kicker">rendering strategy</div><h2>SVG when it works. HTML when it does not.</h2></div><p class="section-desc">Different agent surfaces handle rich output differently. The skill tells the model which output to choose so a seat map is still useful in Claude Web, Claude Code, and plain terminals.</p></div>
+      <div class="behavior-grid">
+        <div class="behavior"><h3>seat_map</h3><p>Use this when the client can display SVG or image content. It returns structured rows and an SVG seat map.</p></div>
+        <div class="behavior"><h3>seat_map_html</h3><p>Use this in Claude Code or text-first clients when SVG does not render. Save the HTML and open it locally.</p></div>
+        <div class="behavior"><h3>checkout link</h3><p>When booking is not configured, return Yorck's checkout URL so the user can finish manually as guest or with their account.</p></div>
+      </div>
+    </section>
+
+    <section class="section" id="skill">
+      <div class="section-header"><div><div class="section-kicker">the skill file</div><h2>the behavior lives in one markdown file.</h2></div><p class="section-desc">Install this alongside the MCP server. It teaches the agent the tool order, public vs private behavior, and the fallback path for seat maps.</p></div>
+      <div class="code-card large"><div class="code-head"><div class="code-title">SKILL.md</div><button class="copy-btn" data-copy="skill-md">Copy SKILL.md</button></div><pre id="skill-md">${skillMarkdown}</pre></div>
+    </section>
+
+    <section class="footer">
+      <span class="mark" aria-hidden="true"><svg viewBox="0 0 64 64" role="img"><path fill="#1a1a1a" d="M32 2l5.1 5.3 7.2-1 2.7 6.8 7 2.3-.5 7.3 5.7 4.7-3.6 6.4 3.6 6.4-5.7 4.7.5 7.3-7 2.3-2.7 6.8-7.2-1L32 62l-5.1-5.3-7.2 1-2.7-6.8-7-2.3.5-7.3-5.7-4.7 3.6-6.4-3.6-6.4 5.7-4.7-.5-7.3 7-2.3 2.7-6.8 7.2 1L32 2z"/><path fill="#fff" d="M20.8 18.3h8.5v3.2h-1.8l4.8 8 4.8-8h-1.9v-3.2h8v3.2h-1.7l-7 11.3v8.1h3.1v3.2H26.4v-3.2h3.2v-8.1l-7.1-11.3h-1.7v-3.2z"/></svg></span>
+      <p>Public by default. Private only when you opt in. Real-world actions only after confirmation.</p>
+      <div class="button-row" style="justify-content:center"><a class="btn yellow" href="https://github.com/Mahir-Isikli/yorck-mcp">View GitHub repo</a><a class="btn black" href="/skill.zip">Download skill.zip</a></div>
     </section>
   </main>
+
   <div class="toast" id="toast">copied</div>
   <script>
-    const toast=document.getElementById('toast');
-    async function copyText(text){try{await navigator.clipboard.writeText(text)}catch{const ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove()}toast.classList.add('show');setTimeout(()=>toast.classList.remove('show'),1200)}
-    document.querySelectorAll('.copy').forEach(btn=>btn.addEventListener('click',()=>{const id=btn.getAttribute('data-copy');const el=document.getElementById(id);copyText(el?el.innerText.trim():'')}));
+    const toast = document.getElementById('toast');
+    function showToast(){ toast.classList.add('show'); window.setTimeout(function(){ toast.classList.remove('show'); }, 1300); }
+    async function copyText(text){
+      try { await navigator.clipboard.writeText(text); }
+      catch(e){ const ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+      showToast();
+    }
+    document.querySelectorAll('[data-copy]').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        const id = btn.getAttribute('data-copy');
+        const el = document.getElementById(id);
+        copyText(el ? el.innerText.trim() : '');
+      });
+    });
   </script>
 </body>
 </html>`;

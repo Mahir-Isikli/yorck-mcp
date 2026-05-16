@@ -1,0 +1,37 @@
+name = "yorck-mcp"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+
+[observability]
+enabled = true
+
+[vars]
+PREFERRED_CINEMAS = "babylon-kreuzberg,delphi-filmpalast,delphi-lux,filmtheater-am-friedrichshain,kant-kino,kino-international,neues-off,odeon,passage,rollberg,yorck"
+DEFAULT_FORMATS = "OmeU,OV,OmU"
+COGNITO_USER_POOL = "eu-central-1_TIusy2VuG"
+COGNITO_CLIENT_ID = "4m9hc0qk59mvcb4hfd6lep1262"
+COGNITO_REGION = "eu-central-1"
+VISTA_BASE = "https://uq8lgoj7z2.execute-api.eu-central-1.amazonaws.com/production/api/vista"
+YORCK_AUTH_BASE = "https://rbfmu7cs19.execute-api.eu-central-1.amazonaws.com/production"
+YORCK_BASE = "https://www.yorck.de"
+PUBLIC_BASE_URL = "https://yorck-mcp.isiklimahir.workers.dev"
+
+[browser]
+binding = "BROWSER"
+
+[[kv_namespaces]]
+binding = "CACHE"
+id = "df5b76d2cd7045ddbe70f89b2459574f"
+
+[[durable_objects.bindings]]
+name = "MCP_OBJECT"
+class_name = "YorckMcp"
+
+[[durable_objects.bindings]]
+name = "PUBLIC_MCP_OBJECT"
+class_name = "PublicYorckMcp"
+
+[[migrations]]
+tag = "v2"
