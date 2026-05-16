@@ -8,7 +8,7 @@ import { whoAmI } from "./yorck/auth.ts";
 import { showtimeToIcs } from "./lib/ics.ts";
 import { PublicYorckMcp, YorckMcp } from "./mcp.ts";
 import { CLAUDE_CODE_BOOTSTRAP_PROMPT, installScript, skillZip, YORCK_MOVIE_AGENT_SKILL } from "./skill-content.ts";
-import { landingPage } from "./landing.ts";
+import { landingPage, MOVIE_AGENT_ICON_SVG } from "./landing.ts";
 
 export { PublicYorckMcp, YorckMcp };
 
@@ -37,6 +37,15 @@ function requireAuth(c: { req: { raw: Request }; env: Env; text: (body: string, 
 }
 
 app.get("/", (c) => c.html(landingPage()));
+
+const iconResponse = () => new Response(MOVIE_AGENT_ICON_SVG, {
+  headers: {
+    "Content-Type": "image/svg+xml; charset=utf-8",
+    "Cache-Control": "public, max-age=86400",
+  },
+});
+app.get("/favicon.svg", iconResponse);
+app.get("/icon.svg", iconResponse);
 
 app.get("/skill/SKILL.md", (c) => c.text(YORCK_MOVIE_AGENT_SKILL, 200, { "Content-Type": "text/markdown; charset=utf-8" }));
 
