@@ -65,10 +65,10 @@ export function landingPage(): string {
         <div class="code-card"><div class="code-head"><div class="code-title">CLI quick start</div><button class="copy" data-copy="cli-code">Copy</button></div><pre id="cli-code">npx -y yorck-mcp whats-on --when tonight --after 18:00
 npx -y yorck-mcp plan --q "devil wears prada" --when tonight
 npx -y yorck-mcp seat-map-html &lt;session-id&gt; --out seat-map.html</pre></div>
-        <div class="code-card"><div class="code-head"><div class="code-title">Private local booking MCP</div><button class="copy" data-copy="private-code">Copy</button></div><pre id="private-code">claude mcp add --transport stdio \
-  --env YORCK_EMAIL=you@example.com \
-  --env YORCK_PASSWORD=your-password \
-  --env YORCK_UNLIMITED_CARD=your-card-number \
+        <div class="code-card"><div class="code-head"><div class="code-title">Private local booking MCP</div><button class="copy" data-copy="private-code">Copy</button></div><pre id="private-code">claude mcp add --transport stdio \\
+  --env YORCK_EMAIL=you@example.com \\
+  --env YORCK_PASSWORD=your-password \\
+  --env YORCK_UNLIMITED_CARD=your-card-number \\
   yorck-private -- npx -y yorck-mcp mcp-stdio</pre></div>
       </div>
     </section>
