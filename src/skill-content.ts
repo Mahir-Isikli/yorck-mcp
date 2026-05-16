@@ -154,6 +154,67 @@ export function skillZip(): Uint8Array {
   return out;
 }
 
+export const CLAUDE_CODE_BOOTSTRAP_PROMPT = `# Install the Yorck Movie Agent in Claude Code
+
+You are helping me install the Yorck Movie Agent from the public repo and npm package.
+
+Public repo:
+
+https://github.com/Mahir-Isikli/yorck-mcp
+
+Install page:
+
+https://yorck-mcp.isiklimahir.workers.dev
+
+NPM package:
+
+\`\`\`bash
+npx -y yorck-mcp@latest
+\`\`\`
+
+Please do the following:
+
+1. Read the public repo README or install page so you understand the package.
+2. Install the Claude Code skill locally:
+
+   \`\`\`bash
+   npx -y yorck-mcp@latest install-skill --target claude
+   \`\`\`
+
+3. Add the public read-only MCP server to Claude Code:
+
+   \`\`\`bash
+   claude mcp add --transport http yorck https://yorck-mcp.isiklimahir.workers.dev/public/mcp
+   \`\`\`
+
+4. Smoke-test the CLI:
+
+   \`\`\`bash
+   npx -y yorck-mcp@latest whats-on --when tonight --after 18:00 --limit 3
+   \`\`\`
+
+5. If I ask for a seat map and SVG/image output does not render in this environment, use the HTML fallback:
+
+   \`\`\`bash
+   npx -y yorck-mcp@latest seat-map-html <session-id> --out seat-map.html
+   open seat-map.html
+   \`\`\`
+
+6. If I want private automated booking, do not collect secrets into chat. Instead explain that I should configure the local MCP with environment variables:
+
+   \`\`\`bash
+   claude mcp add --transport stdio \\
+     --env YORCK_EMAIL=you@example.com \\
+     --env YORCK_PASSWORD=your-password \\
+     --env YORCK_UNLIMITED_CARD=your-card-number \\
+     yorck-private -- npx -y yorck-mcp@latest mcp-stdio
+   \`\`\`
+
+7. Never claim a ticket was booked or a calendar event was created unless a tool actually succeeded. Booking must require explicit confirmation.
+
+After installing, tell me exactly what you changed and how to test it with one prompt like: "find original-language Yorck movies tonight after 7 and show me the best seat map".
+`;
+
 export function installScript(baseUrl = "https://yorck-mcp.isiklimahir.workers.dev") {
   return `#!/usr/bin/env bash
 set -euo pipefail

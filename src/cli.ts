@@ -9,7 +9,7 @@ import { findSeatByRowAndId, getSeatPlan, renderSeatPlanHtml, renderSeatPlanSvg 
 import { cancelOrder, commitOrder, reserveUnlimited } from "./yorck/booking.ts";
 import { showtimeToIcs } from "./lib/ics.ts";
 import { whoAmI } from "./yorck/auth.ts";
-import { YORCK_MOVIE_AGENT_SKILL } from "./skill-content.ts";
+import { CLAUDE_CODE_BOOTSTRAP_PROMPT, YORCK_MOVIE_AGENT_SKILL } from "./skill-content.ts";
 
 const PUBLIC_MCP_URL = "https://yorck-mcp.isiklimahir.workers.dev/public/mcp";
 
@@ -450,6 +450,16 @@ async function commandSkill(args: ParsedArgs) {
   }
 }
 
+async function commandClaudeCodePrompt(args: ParsedArgs) {
+  const out = str(args, "out");
+  if (out) {
+    await writeFile(out, CLAUDE_CODE_BOOTSTRAP_PROMPT, "utf8");
+    console.log(`Wrote ${out}`);
+  } else {
+    process.stdout.write(CLAUDE_CODE_BOOTSTRAP_PROMPT);
+  }
+}
+
 async function commandInstallSkill(args: ParsedArgs) {
   const target = (str(args, "target") || "claude").toLowerCase();
   const home = process.env.HOME || process.cwd();
@@ -525,6 +535,7 @@ Usage:
   yorck mcp-stdio
   yorck mcp-config [--private]
   yorck skill [--out SKILL.md]
+  yorck claude-code-prompt [--out prompt.md]
   yorck install-skill [--target claude|pi|both]
 
 Public commands need no account. Booking commands need Yorck credentials and an Unlimited card number.
@@ -573,6 +584,9 @@ async function main() {
       return commandMcpConfig(args);
     case "skill":
       return commandSkill(args);
+    case "claude-code-prompt":
+    case "bootstrap-prompt":
+      return commandClaudeCodePrompt(args);
     case "install-skill":
       return commandInstallSkill(args);
     case "mcp-stdio":

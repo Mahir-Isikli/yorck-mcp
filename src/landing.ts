@@ -14,7 +14,7 @@ export function landingPage(): string {
 </head>
 <body>
   <main>
-    <nav class="nav"><div class="brand">yorck-mcp</div><div class="links"><a class="pill" href="/public/mcp">public MCP</a><a class="pill" href="/skill/SKILL.md">SKILL.md</a><a class="pill" href="/skill.zip">skill.zip</a><a class="pill" href="/install.sh">install.sh</a><a class="pill" href="https://www.npmjs.com/package/yorck-mcp">npm</a></div></nav>
+    <nav class="nav"><div class="brand">yorck-mcp</div><div class="links"><a class="pill" href="/public/mcp">public MCP</a><a class="pill" href="/claude-code-prompt.md">Claude Code prompt</a><a class="pill" href="/skill/SKILL.md">SKILL.md</a><a class="pill" href="/skill.zip">skill.zip</a><a class="pill" href="https://github.com/Mahir-Isikli/yorck-mcp">GitHub</a><a class="pill" href="https://www.npmjs.com/package/yorck-mcp">npm</a></div></nav>
     <section class="hero">
       <div>
         <div class="eyebrow">Berlin cinema for agents</div>
@@ -41,6 +41,7 @@ export function landingPage(): string {
       <div class="install-grid">
         <div class="tabs">
           <button class="tab active" data-tab="claude-web">Claude Web connector</button>
+          <button class="tab" data-tab="claude-code-prompt">Claude Code prompt</button>
           <button class="tab" data-tab="claude-code-public">Claude Code public</button>
           <button class="tab" data-tab="claude-code-private">Claude Code private</button>
           <button class="tab" data-tab="skill">Claude skill</button>
@@ -48,7 +49,8 @@ export function landingPage(): string {
           <button class="tab" data-tab="html">Inline HTML fallback</button>
         </div>
         <div>
-          <div class="panel active" id="claude-web"><h3>Claude Web / custom connector</h3><p>Customize → Connectors → Add custom connector, then paste:</p><pre class="screen"><button class="copy">copy</button>https://yorck-mcp.isiklimahir.workers.dev/public/mcp</pre></div>
+          <div class="panel active" id="claude-web"><h3>Claude Web / custom connector</h3><p>Customize → Connectors → Add custom connector, then paste:</p><pre class="screen"><button class="copy">copy</button>https://yorck-mcp.isiklimahir.workers.dev/public/mcp</pre><p>Then upload the skill ZIP from <a href="/skill.zip">/skill.zip</a> under Customize → Skills.</p></div>
+          <div class="panel" id="claude-code-prompt"><h3>Claude Code bootstrap prompt</h3><p>Paste this into Claude Code and let it install the repo, npm package, skill, and MCP config for you.</p><pre class="screen"><button class="copy">copy</button>curl -fsSL https://yorck-mcp.isiklimahir.workers.dev/claude-code-prompt.md</pre><p>Or open <a href="/claude-code-prompt.md">the prompt</a> and copy it.</p></div>
           <div class="panel" id="claude-code-public"><h3>Claude Code, public tools</h3><pre class="screen"><button class="copy">copy</button>claude mcp add --transport http yorck https://yorck-mcp.isiklimahir.workers.dev/public/mcp</pre></div>
           <div class="panel" id="claude-code-private"><h3>Claude Code, local bookable MCP</h3><pre class="screen"><button class="copy">copy</button>claude mcp add --transport stdio \\
   --env YORCK_EMAIL=you@example.com \\

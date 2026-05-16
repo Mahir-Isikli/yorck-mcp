@@ -7,7 +7,7 @@ import { reserveUnlimited, cancelOrder, getOrder } from "./yorck/booking.ts";
 import { whoAmI } from "./yorck/auth.ts";
 import { showtimeToIcs } from "./lib/ics.ts";
 import { PublicYorckMcp, YorckMcp } from "./mcp.ts";
-import { installScript, skillZip, YORCK_MOVIE_AGENT_SKILL } from "./skill-content.ts";
+import { CLAUDE_CODE_BOOTSTRAP_PROMPT, installScript, skillZip, YORCK_MOVIE_AGENT_SKILL } from "./skill-content.ts";
 import { landingPage } from "./landing.ts";
 
 export { PublicYorckMcp, YorckMcp };
@@ -41,6 +41,8 @@ app.get("/", (c) => c.html(landingPage()));
 app.get("/skill/SKILL.md", (c) => c.text(YORCK_MOVIE_AGENT_SKILL, 200, { "Content-Type": "text/markdown; charset=utf-8" }));
 
 app.get("/install.sh", (c) => c.text(installScript("https://yorck-mcp.isiklimahir.workers.dev"), 200, { "Content-Type": "text/x-shellscript; charset=utf-8" }));
+
+app.get("/claude-code-prompt.md", (c) => c.text(CLAUDE_CODE_BOOTSTRAP_PROMPT, 200, { "Content-Type": "text/markdown; charset=utf-8" }));
 
 app.get("/skill.zip", () => {
   const zip = skillZip();
